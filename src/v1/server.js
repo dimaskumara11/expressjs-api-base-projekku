@@ -2,7 +2,8 @@ var express = require('express');
 var logger = require('morgan');
 
 var indexRouter = require('./route');
-var companyRouter = require('./route/company');
+var companyRouter = require('./route/company.route');
+var mediaRouter = require('./route/media.route');
 
 var app = express();
 
@@ -22,5 +23,6 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(`/${version}`, indexRouter);
 app.use(`/${version}/company`, companyRouter);
+app.use(`/${version}/media`, mediaRouter);
 
 module.exports = app;

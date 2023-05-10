@@ -6,7 +6,7 @@ const database = {
       username: 'root',
       password: '',
       dialect: "mysql",
-      operatorsAliases: false,
+      operatorsAliases: 0,
       pool: {
         max: 5,
         min: 0,

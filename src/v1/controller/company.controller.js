@@ -1,50 +1,86 @@
 const db = require("../model");
 const Company = db.company;
-const Op = db.Sequelize.Op;
-const responseFormat = require("../helper/response.helper")
+const { responseFound, responseNotFound, responseErrorCode, responseInsertSuccess, responseInsertFail, responseUpdateSuccess, responseUpdateFail, responseDeleteSuccess, responseDeleteFail } = require("../helper/response.helper");
+const { pagination, list } = require("../service/company.service");
+let result = {}
 
 exports.index = function(req, res, next) {
-  if(req.query.pagination){
-    pagination(req,res)
+  if(req.query.page){
+    result = pagination(req,res)
   }else{
-    list(req,res)
+    result = list(req,res)
   }
+  res.status(result.status).json(result.res_body)
 }
 
-const pagination = function(req, res) {
-  Company.findAndCountAll({
-    where: search(req),
-    order: [],
-    limit: 5,
-    offset: 0,
-  }).then(data => {
-    if(data.count > 0){
-      responseFormat.responseFound(res, data)
+exports.detail = function(req, res, next) {
+  Company.findByPk(req.params.id).then(data => {
+    if(data){
+      result = responseFound(data)
     }else{
-      responseFormat.responseNotFound(res)
+      result = responseNotFound(res)
     }
+    res.status(result.status).json(result.res_body)
   }).catch(err => {
-    responseFormat.responseErrorCode(res, err.message)
+    result = responseErrorCode(err.message)
+    res.status(result.status).json(result.res_body)
   });
-};
+}
 
-const list = function(req, res) {
-  Company.findAll({
-    where: search(req)
+exports.create = function(req, res, next) {
+  const { sector_id, logo, name, owner_name} = req.body
+  Company.create({ 
+    sector_id, 
+    logo, 
+    name, 
+    owner_name,
   }).then(data => {
-    if(data.length > 0){
-      responseFormat.responseFound(res, data)
+    if(data){
+      result = responseInsertSuccess({id:data.id})
     }else{
-      responseFormat.responseNotFound(res)
+      result = responseInsertFail()
     }
+    res.status(result.status).json(result.res_body)
   }).catch(err => {
-    responseFormat.responseErrorCode(res, err.message)
+    result = responseErrorCode(err.message)
+    res.status(result.status).json(result.res_body)
   });
-};
+}
 
-const search = function(req) {
-  const filter = {}
-  if(req.query.name) filter.name = req.query.name
-  if(req.query.owner_name) filter.owner_name = req.query.owner_name
-  return filter
+exports.update = function(req, res, next) {
+  const { sector_id, logo, name, owner_name} = req.body
+  Company.update({
+    sector_id, 
+    logo, 
+    name, 
+    owner_name,
+  },{
+    where : { id: req.params.id }
+  }).then(data => {
+    if(data[0]){
+      result = responseUpdateSuccess({id:req.params.id})
+    }else{
+      result = responseUpdateFail()
+    }
+    res.status(result.status).json(result.res_body)
+  }).catch(err => {
+    result = responseErrorCode(err.message)
+    res.status(result.status).json(result.res_body)
+  });
+}
+
+exports.delete = function(req, res, next) {
+  Company.destroy({
+    where : { id: req.params.id }
+  }).then(data => {
+    if(data){
+      result = responseDeleteSuccess({id:req.params.id})
+    }else{
+      result = responseDeleteFail()
+    }
+    res.status(result.status).json(result.res_body)
+  }).catch(err => {
+    result = responseErrorCode(err.message)
+    res.status(result.status).json(result.res_body)
+  });
 }
