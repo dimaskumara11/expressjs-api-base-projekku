@@ -1,9 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
     const Company = sequelize.define("company", {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true
-      },
       sector_id: {
         type: DataTypes.INTEGER
       },
@@ -22,5 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       updatedAt: 'updated_at',
       deletedAt: 'deleted_at',
     });
+    Company.associate = function(models) {
+      Company.hasOne(models.sector, {foreignKey: 'id'});
+    }
     return Company;
 };

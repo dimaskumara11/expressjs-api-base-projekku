@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Media = sequelize.define("media", {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true
+      path: {
+        type: DataTypes.STRING
       },
       filename: {
         type: DataTypes.STRING

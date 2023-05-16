@@ -14,7 +14,17 @@ exports.index = function(req, res, next) {
 }
 
 exports.detail = function(req, res, next) {
-  Company.findByPk(req.params.id).then(data => {
+  Company.findByPk(req.params.id, {
+    include: [
+      {
+          model: db.sector,
+          // required: false,
+          // where: {
+          //     Time: { [op.eq]:null }
+          // }
+      }
+    ]
+  }).then(data => {
     if(data){
       result = responseFound(data)
     }else{
