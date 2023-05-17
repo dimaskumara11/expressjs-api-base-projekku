@@ -4,6 +4,7 @@ const { responseFound, responseNotFound, responseErrorCode } = require("../helpe
 const { paginate } = require("../helper/paginate.helper");
 
 exports.pagination = function(req, res) {
+  return new Promise(function(myResolve, myReject){
     Company.findAndCountAll(paginate({
       where: search(req),
       order: [[(req.query.order_field || "id"),(req.query.order || "ASC")]]
@@ -12,28 +13,31 @@ exports.pagination = function(req, res) {
       pageSize : parseInt(req.query.page_size || 10)
     })).then(data => {
       if(data.count > 0){
-        return responseFound(data)
+        myResolve(responseFound(data))
       }else{
-        return responseNotFound(res)
+        myReject(responseNotFound(res))
       }
     }).catch(err => {
-        return responseErrorCode(err.message)
+      myReject(responseErrorCode(err.message))
     });
-  };
+  })
+}
   
 exports.list = function(req, res) {
+  return new Promise(function(myResolve, myReject){
     Company.findAll({
       where: search(req)
     }).then(data => {
       if(data.length > 0){
-        return responseFound(data)
+        myResolve(responseFound(data))
       }else{
-        return responseNotFound(res)
+        myReject(responseNotFound(res))
       }
     }).catch(err => {
-        return responseErrorCode(err.message)
+      myReject(responseErrorCode(err.message))
     });
-  };
+  })
+};
   
 const search = function(req) {
     const filter = {}

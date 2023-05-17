@@ -1,16 +1,25 @@
 const db = require("../model");
 const Company = db.company;
-const { responseFound, responseNotFound, responseErrorCode, responseInsertSuccess, responseInsertFail, responseUpdateSuccess, responseUpdateFail, responseDeleteSuccess, responseDeleteFail } = require("../helper/response.helper");
+const { responseFound, responseNotFound, responseErrorCode, responseInsertSuccess, responseInsertFail, responseUpdateSuccess, responseUpdateFail, responseDeleteSuccess, responseDeleteFail, responseErrorValidation } = require("../helper/response.helper");
 const { pagination, list } = require("../service/company.service");
+const { createValidation } = require("../validation/company.validation");
+const { validationResult } = require("express-validator");
 let result = {}
 
 exports.index = function(req, res, next) {
   if(req.query.page){
-    result = pagination(req,res)
+    pagination(req,res).then(data => {
+      return res.status(data.status).json(data.res_body)
+    }).catch(err => {
+      return res.status(err.status).json(err.res_body)
+    })
   }else{
-    result = list(req,res)
+    lists(req,res).then(data => {
+      return res.status(data.status).json(data.res_body)
+    }).catch(err => {
+      return res.status(err.status).json(err.res_body)
+    })
   }
-  res.status(result.status).json(result.res_body)
 }
 
 exports.detail = function(req, res, next) {
@@ -18,10 +27,6 @@ exports.detail = function(req, res, next) {
     include: [
       {
           model: db.sector,
-          // required: false,
-          // where: {
-          //     Time: { [op.eq]:null }
-          // }
       }
     ]
   }).then(data => {
@@ -30,14 +35,21 @@ exports.detail = function(req, res, next) {
     }else{
       result = responseNotFound(res)
     }
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   }).catch(err => {
     result = responseErrorCode(err.message)
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   });
 }
 
 exports.create = function(req, res, next) {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    result = responseErrorValidation(errors.array()[0].msg)
+    return res.status(result.status).json(result.res_body)
+  }
+
   const { sector_id, logo, name, owner_name} = req.body
   Company.create({ 
     sector_id, 
@@ -50,10 +62,10 @@ exports.create = function(req, res, next) {
     }else{
       result = responseInsertFail()
     }
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   }).catch(err => {
     result = responseErrorCode(err.message)
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   });
 }
 
@@ -72,10 +84,10 @@ exports.update = function(req, res, next) {
     }else{
       result = responseUpdateFail()
     }
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   }).catch(err => {
     result = responseErrorCode(err.message)
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   });
 }
 
@@ -88,9 +100,9 @@ exports.delete = function(req, res, next) {
     }else{
       result = responseDeleteFail()
     }
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   }).catch(err => {
     result = responseErrorCode(err.message)
-    res.status(result.status).json(result.res_body)
+    return res.status(result.status).json(result.res_body)
   });
 }

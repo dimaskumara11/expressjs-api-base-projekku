@@ -68,3 +68,10 @@ exports.responseDeleteFail = () => {
         status : 400
     }
 }
+
+exports.responseErrorValidation = (message) => {
+    return {
+        res_body : responseFormat(null,message),
+        status : 422
+    }
+}
