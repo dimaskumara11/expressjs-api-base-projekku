@@ -70,6 +70,13 @@ exports.create = function(req, res, next) {
 }
 
 exports.update = function(req, res, next) {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    result = responseErrorValidation(errors.array()[0].msg)
+    return res.status(result.status).json(result.res_body)
+  }
+  
   const { sector_id, logo, name, owner_name} = req.body
   Company.update({
     sector_id, 
